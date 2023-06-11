@@ -95,6 +95,5 @@ class MA2B:
 
         tsp_fitness = self.calculate_distance(tsp_solution)
         kp_fitness = self.calculate_fitness(kp_solution)
-        total_fitness = tsp_fitness + kp_fitness
-        print(tsp_solution, kp_solution, total_fitness)
+        total_fitness = 0.2 * kp_fitness + 0.8 * tsp_fitness
         return tsp_solution, kp_solution, total_fitness

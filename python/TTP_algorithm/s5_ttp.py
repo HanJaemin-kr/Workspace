@@ -83,7 +83,7 @@ class S5:
 
                 tsp_fitness = self.calculate_distance(tsp_solution)
                 kp_fitness = self.calculate_fitness(kp_solution)
-                total_fitness = tsp_fitness + kp_fitness
+                total_fitness = 0.2 * kp_fitness + 0.8 * tsp_fitness
 
                 agent.tsp_genome = tsp_solution
                 agent.kp_genome = kp_solution
