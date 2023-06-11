@@ -35,16 +35,31 @@ class BRUTE:
         best_kp_genome = None
         best_fitness = float('-inf')
 
-        for tsp_genome in itertools.permutations(range(num_cities)):
+        for tsp_genome in itertools.permutations(range(num_cities), num_cities):
             for kp_genome in itertools.product([0, 1], repeat=num_items):
                 tsp_fitness = self.evaluate_tsp(list(tsp_genome))
                 kp_fitness = self.evaluate_kp(list(kp_genome))
-                ttp_fitness = tsp_fitness + kp_fitness
+                ttp_fitness = 0.2 * kp_fitness + 0.8 * tsp_fitness
 
                 if ttp_fitness > best_fitness:
                     best_tsp_genome = list(tsp_genome)
                     best_kp_genome = list(kp_genome)
                     best_fitness = ttp_fitness
+
+        print("\n==========================brute-force genetic Algorithm==========================")
+        print("Best Individual (TSP Genome):", [x + 1 for x in best_tsp_genome])
+        print("Best Individual (KP Genome):", best_kp_genome)
+        print(" > Selected Knapsack Weights:", sum([self.item_weights[i] for i in range(len(best_kp_genome)) if best_kp_genome[i] == 1]))
+        selected_values = sum([self.item_values[i] for i in range(len(best_kp_genome)) if best_kp_genome[i] == 1])
+        print(" > Total Item Value:", selected_values)
+
+        total_distance = 0
+        for i in range(len(best_tsp_genome)):
+            city1 = best_tsp_genome[i] - 1
+            city2 = best_tsp_genome[(i + 1) % len(best_tsp_genome)] - 1
+            total_distance += self.distance_matrix[city1][city2]
+        print(" > Total Distance:", total_distance)
+        print("===> Fitness:", best_fitness)
 
         return best_tsp_genome, best_kp_genome, best_fitness
 
@@ -67,3 +82,36 @@ class BRUTE:
                 if total_weight > self.knapsack_capacity:
                     return 0
         return kp_fitness
+
+"""
+# 예시 문제 데이터
+distance_matrix = [[0, 2, 5, 9, 10],
+                   [2, 0, 4, 8, 9],
+                   [5, 4, 0, 6, 7],
+                   [9, 8, 6, 0, 3],
+                   [10, 9, 7, 3, 0]]
+item_values = [4, 6, 8, 2, 5]
+item_weights = [1, 2, 3, 2, 1]
+knapsack_capacity = 6
+
+brute = BRUTE(distance_matrix, item_values, item_weights, knapsack_capacity)
+best_tsp_genome, best_kp_genome, best_fitness = brute.solve_ttp_brute_force()
+
+# 출력
+print("\n=======brute-force Algorithm=======")
+print("Best Individual (TSP Genome):", best_tsp_genome)
+print("Best Individual (KP Genome):", best_kp_genome)
+print("Total Fitness:", best_fitness)
+
+selected_weights = sum([item_weights[i] for i in range(len(best_kp_genome)) if best_kp_genome[i] == 1])
+selected_values = sum([item_values[i] for i in range(len(best_kp_genome)) if best_kp_genome[i] == 1])
+print("\nSelected Knapsack Weights:", selected_weights)
+
+total_distance = 0
+for i in range(len(best_tsp_genome)):
+    city1 = best_tsp_genome[i] - 1
+    city2 = best_tsp_genome[(i + 1) % len(best_tsp_genome)] - 1
+    total_distance += distance_matrix[city1][city2]
+print("Total Distance:", total_distance)
+print(" ===> Fitness:", best_fitness)
+"""

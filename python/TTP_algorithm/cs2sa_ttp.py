@@ -115,16 +115,16 @@ def cs2sa_algorithm(distance_matrix, item_values, item_weights, knapsack_capacit
     return best_tsp_solution, best_kp_solution, best_fitness
 
 
-# Example usage
-distance_matrix = [
-    [0, 2, 9, 10],
-    [2, 0, 6, 4],
-    [9, 6, 0, 8],
-    [10, 4, 8, 0]
-]
-item_values = [2, 4, 6, 8]
-item_weights = [1, 2, 3, 4]
-knapsack_capacity = 7
+# 예시 문제 데이터
+distance_matrix = [[0, 2, 5, 9, 10],
+ [2, 0, 4, 8, 9],
+ [5, 4, 0, 6, 7],
+ [9, 8, 6, 0, 3],
+ [10, 9, 7, 3, 0]]
+item_values = [4, 6, 8, 2, 5]
+item_weights = [1, 2, 3, 2, 1]
+knapsack_capacity = 6
+
 
 best_tsp_solution, best_kp_solution, best_fitness = cs2sa_algorithm(distance_matrix, item_values, item_weights,
                                                                    knapsack_capacity)
