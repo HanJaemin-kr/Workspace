@@ -12,58 +12,52 @@ class CoGA:
         self.elite_size = elite_size
         self.num_generations = num_generations
 
-    def generate_tsp_genome(self, num_cities):
-        genome = list(range(num_cities))
-        random.shuffle(genome)
-        return genome
+    def generate_genome(self, num_cities, num_items):
+        tsp_genome = list(range(1, num_cities + 1))
+        random.shuffle(tsp_genome)
 
-    def generate_kp_genome(self, num_items):
-        genome = []
+        kp_genome = []
         for _ in range(num_items):
-            genome.append(random.randint(0, 1))
-        return genome
+            kp_genome.append(random.randint(0, 1))
+
+        return {'tsp_genome': tsp_genome, 'kp_genome': kp_genome}
 
     def initialize_population(self, num_cities, num_items):
         population = []
         for _ in range(self.population_size):
-            tsp_genome = self.generate_tsp_genome(num_cities)
-            kp_genome = self.generate_kp_genome(num_items)
-            individual = {'tsp_genome': tsp_genome, 'kp_genome': kp_genome}
+            individual = self.generate_genome(num_cities, num_items)
             population.append(individual)
         return population
 
-    def evaluate_tsp(self, genome):
-        tsp_fitness = 0
-        num_cities = len(genome)
-        for i in range(num_cities):
-            city1 = genome[i]
-            city2 = genome[(i + 1) % num_cities]
-            tsp_fitness += self.distance_matrix[city1][city2]
-        return tsp_fitness
+    def evaluate_ttp(self, genome):
+        tsp_genome = genome['tsp_genome']
+        kp_genome = genome['kp_genome']
 
-    def evaluate_kp(self, genome):
+        tsp_fitness = 0
+        num_cities = len(tsp_genome)
+        for i in range(num_cities):
+            city1 = tsp_genome[i]
+            city2 = tsp_genome[(i + 1) % num_cities]
+            tsp_fitness += self.distance_matrix[city1-1][city2-1]
+
         kp_fitness = 0
         total_weight = 0
-        for i in range(len(genome)):
-            if genome[i] == 1:
+        for i in range(len(kp_genome)):
+            if kp_genome[i] == 1:
                 kp_fitness += self.item_values[i]
                 total_weight += self.item_weights[i]
                 if total_weight > self.knapsack_capacity:
-                    return 0
-        return kp_fitness
+                    kp_fitness = 0
+                    break
+
+        ttp_fitness = tsp_fitness + kp_fitness
+        return ttp_fitness
 
     def evaluate_population(self, population):
         fitness_scores = []
         for individual in population:
-            tsp_genome = individual['tsp_genome']
-            kp_genome = individual['kp_genome']
-
-            tsp_fitness = self.evaluate_tsp(tsp_genome)
-            kp_fitness = self.evaluate_kp(kp_genome)
-
-            fitness_score = tsp_fitness + kp_fitness
-            fitness_scores.append(fitness_score)
-
+            fitness = self.evaluate_ttp(individual)
+            fitness_scores.append(fitness)
         return fitness_scores
 
     def select_parents(self, population, fitness_scores):
@@ -79,102 +73,98 @@ class CoGA:
         kp_genome1 = parent1['kp_genome']
         kp_genome2 = parent2['kp_genome']
 
+        if len(tsp_genome1) <= 1 or len(tsp_genome2) <= 1:
+            return parent1
+
         tsp_crossover_point = random.randint(1, len(tsp_genome1) - 1)
         kp_crossover_point = random.randint(1, len(kp_genome1) - 1)
 
         tsp_child_genome = tsp_genome1[:tsp_crossover_point] + tsp_genome2[tsp_crossover_point:]
+        tsp_child_genome = self.remove_duplicates(tsp_child_genome)  # Remove duplicate cities
+
         kp_child_genome = kp_genome1[:kp_crossover_point] + kp_genome2[kp_crossover_point:]
 
         child = {'tsp_genome': tsp_child_genome, 'kp_genome': kp_child_genome}
         return child
 
-    def mutate(self, child):
+    def remove_duplicates(self, tsp_genome):
+        visited = set()
+        unique_genome = []
+        for city in tsp_genome:
+            if city not in visited:
+                unique_genome.append(city)
+                visited.add(city)
+        return unique_genome
+
+
+    def mutate(self, child, mutation_rate):
         tsp_genome = child['tsp_genome']
         kp_genome = child['kp_genome']
 
-        tsp_mutation_point = random.randint(0, len(tsp_genome) - 1)
-        tsp_genome[tsp_mutation_point] = random.choice(tsp_genome)
+        for i in range(len(tsp_genome)):
+            if random.random() < mutation_rate:
+                available_cities = [city for city in range(1, len(tsp_genome) + 1) if city != tsp_genome[i]]
+                if available_cities:
+                    tsp_genome[i] = random.choice(available_cities)
 
-        kp_mutation_point = random.randint(0, len(kp_genome) - 1)
-        kp_genome[kp_mutation_point] = 1 - kp_genome[kp_mutation_point]
+        for i in range(len(kp_genome)):
+            if random.random() < mutation_rate:
+                kp_genome[i] = random.randint(0, 1)
 
-    def evaluate_ttp(self, genome):
-        tsp_fitness = 0
-        num_cities = len(genome)
-        for i in range(num_cities):
-            city1 = genome[i] - 1
-            city2 = genome[(i + 1) % num_cities] - 1
-            tsp_fitness += self.distance_matrix[city1][city2]
+        return child
 
-        kp_fitness = 0
-        total_weight = 0
-        for i in range(len(genome)):
-            if genome[i] == 1:
-                kp_fitness += self.item_values[i]
-                total_weight += self.item_weights[i]
-                if total_weight > self.knapsack_capacity:
-                    kp_fitness = 0
-                    break
+    def evolve_population(self, population, mutation_rate):
+        fitness_scores = self.evaluate_population(population)
+        elite_size = int(self.elite_size * self.population_size)
+        new_population = population[:elite_size]
 
-        ttp_fitness = tsp_fitness + kp_fitness
-        return ttp_fitness
+        while len(new_population) < self.population_size:
+            parent1, parent2 = self.select_parents(population, fitness_scores)
+            child = self.crossover(parent1, parent2)
+            child = self.mutate(child, mutation_rate)
+            new_population.append(child)
 
-    def solve_ttp_problem(self):
+        return new_population
+
+    def solve_ttp_problem(self, mutation_rate=0.01):
         num_cities = len(self.distance_matrix)
         num_items = len(self.item_values)
 
-        # 초기 개체 집단 생성
         population = self.initialize_population(num_cities, num_items)
 
         for _ in range(self.num_generations):
-            # 개체 집단의 적합도 계산
-            fitness_scores = self.evaluate_population(population)
+            population = self.evolve_population(population, mutation_rate)
 
-            # 협력 과정 수행하여 새로운 개체 집단 생성
-            new_population = []
-
-            # 우수한 개체들을 그대로 유지
-            elite_indices = sorted(range(len(fitness_scores)), key=lambda k: fitness_scores[k], reverse=True)[
-                            :self.elite_size]
-            for elite_index in elite_indices:
-                new_population.append(population[elite_index])
-
-            # 나머지 개체들을 생성
-            while len(new_population) < len(population):
-                parent1, parent2 = self.select_parents(population, fitness_scores)
-                child = self.crossover(parent1, parent2)
-                self.mutate(child)
-                new_population.append(child)
-
-            population = new_population
-
-        # 최종 개체 집단에서 가장 우수한 개체 선택
-        best_individual = max(population, key=lambda x: self.evaluate_population([x])[0])
-
-        # Best Individual의 적합도 계산
-        ttp_fitness = self.evaluate_ttp(best_individual['tsp_genome'])
+        fitness_scores = self.evaluate_population(population)
+        best_index = fitness_scores.index(max(fitness_scores))
+        best_individual = population[best_index]
+        ttp_fitness = fitness_scores[best_index]
 
         return best_individual, ttp_fitness
 
 """
-# TTP 문제에 대한 예시 실행
-distance_matrix = [
-    [0, 2, 9, 10],
-    [2, 0, 6, 4],
-    [9, 6, 0, 8],
-    [10, 4, 8, 0]
-]
-item_values = [2, 4, 6, 8]
-item_weights = [1, 2, 3, 4]
-knapsack_capacity = 7
-population_size = 50
-elite_size = 5
-num_generations = 100
+# 예시 문제 데이터
+distance_matrix = [[0, 2, 5, 9, 10],
+ [2, 0, 4, 8, 9],
+ [5, 4, 0, 6, 7],
+ [9, 8, 6, 0, 3],
+ [10, 9, 7, 3, 0]]
+item_values = [4, 6, 8, 2, 5]
+item_weights = [1, 2, 3, 2, 1]
+knapsack_capacity = 6
 
-coga = CoGA(distance_matrix, item_values, item_weights, knapsack_capacity, population_size, elite_size,
-            num_generations)
+population_size = 1000
+elite_size = 0.2
+num_generations = 300
+
+coga = CoGA(distance_matrix, item_values, item_weights, knapsack_capacity, population_size, elite_size, num_generations)
 best_individual, ttp_fitness = coga.solve_ttp_problem()
+print("\n=======Co-evolution Algorithm=======")
+print("Best Individual (TSP Genome):", best_individual['tsp_genome'])
+print("Best Individual (KP Genome):", best_individual['kp_genome'])
+print("Total Fitness:", ttp_fitness)
 
-print("Best Individual:", best_individual)
-print("TTP Fitness:", ttp_fitness)
+print("\nSelected Knapsack Weights:", sum([item_weights[i] for i in range(len(best_individual['kp_genome'])) if best_individual['kp_genome'][i] == 1]))
+print("Total Item Value:", sum([item_values[i] for i in range(len(best_individual['kp_genome'])) if best_individual['kp_genome'][i] == 1]))
+print("Distance:", ttp_fitness)
 """
