@@ -1,23 +1,6 @@
 import random
 
 
-class Agent:
-    def __init__(self, num_cities, num_items):
-        self.tsp_genome = self.generate_tsp_genome(num_cities)
-        self.kp_genome = self.generate_kp_genome(num_items)
-        self.fitness = None
-
-    def generate_tsp_genome(self, num_cities):
-        genome = list(range(num_cities))
-        random.shuffle(genome)
-        return genome
-
-    def generate_kp_genome(self, num_items):
-        genome = []
-        for _ in range(num_items):
-            genome.append(random.randint(0, 1))
-        return genome
-
 
 class MA2B:
     def __init__(self, distance_matrix, item_values, item_weights, knapsack_capacity):
@@ -95,5 +78,5 @@ class MA2B:
 
         tsp_fitness = self.calculate_distance(tsp_solution)
         kp_fitness = self.calculate_fitness(kp_solution)
-        total_fitness = 0.2 * kp_fitness + 0.8 * tsp_fitness
+        total_fitness = kp_fitness / tsp_fitness
         return tsp_solution, kp_solution, total_fitness

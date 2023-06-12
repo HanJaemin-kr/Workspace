@@ -1,5 +1,5 @@
 import random
-
+import numpy as np
 
 class CoGA:
     def __init__(self, distance_matrix, item_values, item_weights, knapsack_capacity, population_size, elite_size,
@@ -51,7 +51,7 @@ class CoGA:
                     kp_fitness = 0
                     break
         # 적합도
-        ttp_fitness = 0.2 * kp_fitness + 0.8 * tsp_fitness
+        ttp_fitness = kp_fitness / tsp_fitness
         return ttp_fitness
 
     def evaluate_population(self, population):
@@ -118,12 +118,17 @@ class CoGA:
         fitness_scores = self.evaluate_population(population)
         elite_size = int(self.elite_size * self.population_size)
         new_population = population[:elite_size]
+        # temp_population = np.array(population)[np.argsort(-np.array(fitness_scores))]
+        # temp_population = list(temp_population)
+        # new_population = temp_population[:elite_size]
 
         while len(new_population) < self.population_size:
             parent1, parent2 = self.select_parents(population, fitness_scores)
             child = self.crossover(parent1, parent2)
-            child = self.mutate(child, mutation_rate)
-            new_population.append(child)
+            #child = self.mutate(child, mutation_rate)
+            if(len(child['tsp_genome']) == len(population[0]['tsp_genome'])):
+                new_population.append(child)
+
 
         return new_population
 
@@ -152,7 +157,7 @@ class CoGA:
             tsp_genome = best_individual['tsp_genome']
             for i in range(num_cities):
                 city1 = tsp_genome[i] - 1
-                city2 = tsp_genome[(i + 1) % num_cities] - 1
+                city2 = tsp_genome[(i + 1) % len(tsp_genome)] - 1
                 total_distance += self.distance_matrix[city1][city2]
 
             print(" > Total Distance:", total_distance)

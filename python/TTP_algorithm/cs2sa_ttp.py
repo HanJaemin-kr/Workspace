@@ -35,7 +35,7 @@ class CS2SA:
         best_fitness = current_fitness
 
         temperature = 100.0
-        cooling_rate = 0.01
+        cooling_rate = 0.001
 
         while temperature > 0.1:
             new_solution = current_solution[:]
@@ -108,10 +108,10 @@ class CS2SA:
             tsp_fitness = self.calculate_distance(tsp_solution, distance_matrix)
             kp_fitness = self.calculate_fitness(kp_solution, item_values, item_weights, knapsack_capacity)
 
-            if 0.2 * kp_fitness + 0.8 * tsp_fitness > best_fitness:
+            if kp_fitness / tsp_fitness < best_fitness:
                 best_tsp_solution = tsp_solution[:]
                 best_kp_solution = kp_solution[:]
-                best_fitness = 0.2 * kp_fitness + 0.8 * tsp_fitness
+                best_fitness = kp_fitness / tsp_fitness
 
         print("\n==========================cs2sa Algorithm===================================")
         print("Best Individual (TSP Genome):", [x + 1 for x in best_tsp_solution])
@@ -130,29 +130,26 @@ class CS2SA:
 
         return best_tsp_solution, best_kp_solution, best_fitness
 
-"""
+
 # 예시 문제 데이터
-distance_matrix = [
-    [0, 2, 5, 9, 10, 3, 7, 4],
-    [2, 0, 4, 8, 9, 7, 6, 5],
-    [5, 4, 0, 6, 7, 2, 3, 1],
-    [9, 8, 6, 0, 3, 4, 9, 2],
-    [10, 9, 7, 3, 0, 6, 5, 3],
-    [3, 7, 2, 4, 6, 0, 8, 6],
-    [7, 6, 3, 9, 5, 8, 0, 7],
-    [4, 5, 1, 2, 3, 6, 7, 0]
-]
-item_values = [4, 6, 8, 2, 5, 3, 7, 9]
-item_weights = [1, 2, 3, 2, 1, 4, 5, 3]
-knapsack_capacity = 6
-
-
-best_tsp_solution, best_kp_solution, best_fitness = cs2sa_algorithm(distance_matrix, item_values, item_weights,
-                                                                   knapsack_capacity)
-
-print("Best TSP Solution:", best_tsp_solution)
-print("Best KP Solution:", best_kp_solution)
-print("Total Fitness:", best_fitness)
-
-
-"""
+# distance_matrix = [
+#     [0, 2, 5, 9, 10, 3, 7, 4],
+#     [2, 0, 4, 8, 9, 7, 6, 5],
+#     [5, 4, 0, 6, 7, 2, 3, 1],
+#     [9, 8, 6, 0, 3, 4, 9, 2],
+#     [10, 9, 7, 3, 0, 6, 5, 3],
+#     [3, 7, 2, 4, 6, 0, 8, 6],
+#     [7, 6, 3, 9, 5, 8, 0, 7],
+#     [4, 5, 1, 2, 3, 6, 7, 0]
+# ]
+# item_values = [4, 6, 8, 2, 5, 3, 7, 9]
+# item_weights = [1, 2, 3, 2, 1, 4, 5, 3]
+# knapsack_capacity = 6
+#
+#
+# best_tsp_solution, best_kp_solution, best_fitness = CS2SA().cs2sa_algorithm(distance_matrix, item_values, item_weights,
+#                                                                    knapsack_capacity)
+#
+# print("Best TSP Solution:", best_tsp_solution)
+# print("Best KP Solution:", best_kp_solution)
+# print("Total Fitness:", best_fitness)
