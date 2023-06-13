@@ -24,16 +24,16 @@ def create_tsp_graph_matrix(size):
 def print_result(result):
     for i, round_data in enumerate(result):
         round_num = i + 1
-        print(f"\n=== Round {round_num} ===")
+        print(f"\n=== === === Round {round_num} === === ===")
         for algorithm_data in round_data[round_num]:
             algorithm_name = list(algorithm_data.keys())[0]
             algorithm_result = algorithm_data[algorithm_name]
             print(f"{algorithm_name}:")
-            print(f"Value: {algorithm_result['value']}")
-            print(f"Weight: {algorithm_result['weight']}")
-            print(f"Distance: {algorithm_result['distance']}")
-            print(f"Fitness: {algorithm_result['fitness']}")
-            print(f"Time: {algorithm_result['time']}")
+            print(f"---Value: {algorithm_result['value']}")
+            print(f"---Weight: {algorithm_result['weight']}")
+            print(f"---Distance: {algorithm_result['distance']}")
+            print(f"---Fitness: {algorithm_result['fitness']}")
+            print(f"---Time: {algorithm_result['time']}")
             print()
 
 def calculate_total_distance(tsp_solution, distance_matrix):
@@ -71,7 +71,7 @@ ma2b_tsp_ls, ma2b_kp_ls, ma2b_time_ls, ma2b_fitness_ls = [], [], [], []
 result = []
 
 
-for i in range(1, 7):
+for i in range(1, 9):
 
     result.append({i: []})
     distance_matrix = list(create_tsp_graph_matrix(i+2))
@@ -80,13 +80,13 @@ for i in range(1, 7):
     new_weight = random.randint(1, 3)
     item_weights.append(new_weight)
     knapsack_capacity += random.randint(0, 2)
+
+    print('======== Round ', i,' ===========')
     print(distance_matrix)
     print('capacity : ',knapsack_capacity)
     print(' value ==>',item_values)
     print(' weight ==>',item_weights)
     print('\n')
-
-
     #brute-force Algorithm
     start_time = time.time()
     brute = BRUTE(distance_matrix, item_values, item_weights, knapsack_capacity)
@@ -156,13 +156,21 @@ for i in range(1, 7):
 
 
 print(print_result(result))
+print(result)
+
+# numpy int64 타입을 일반 int로 변환하는 함수
+# numpy int64 타입을 일반 int로 변환하는 함수
+def numpy_int_to_int(obj):
+    if isinstance(obj, np.integer):
+        return int(obj)
+    return obj
+
 # 결과를 저장할 파일 경로 및 파일명
-file_path = "result_2.txt"
+file_path = "result_3.txt"
 
 # result 변수를 JSON 형식으로 변환
-result_json = json.dumps(result)
+result_json = json.dumps(result, default=numpy_int_to_int)
 
 # JSON 형식의 결과를 파일에 저장
 with open(file_path, "w") as file:
     file.write(result_json)
-
