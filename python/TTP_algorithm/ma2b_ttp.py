@@ -1,7 +1,5 @@
 import random
 
-
-
 class MA2B:
     def __init__(self, distance_matrix, item_values, item_weights, knapsack_capacity):
         self.distance_matrix = distance_matrix
@@ -45,8 +43,9 @@ class MA2B:
             new_solution[random_index] = 1 - new_solution[random_index]  # Bit-flip mutation
 
             new_fitness = self.calculate_fitness(new_solution)
+            new_weight = self.calculate_weight(new_solution)
 
-            if new_fitness > best_fitness:
+            if new_fitness > best_fitness and new_weight <= self.knapsack_capacity:
                 best_solution = new_solution[:]
                 best_fitness = new_fitness
 
@@ -72,11 +71,48 @@ class MA2B:
                     return 0
         return fitness
 
-    def ma2b_algorithm(self):
-        tsp_solution = self.tsp_solver()
-        kp_solution = self.kp_solver()
+    def calculate_weight(self, solution):
+        total_weight = 0
+        for i in range(len(solution)):
+            if solution[i] == 1:
+                total_weight += self.item_weights[i]
+        return total_weight
 
-        tsp_fitness = self.calculate_distance(tsp_solution)
-        kp_fitness = self.calculate_fitness(kp_solution)
-        total_fitness = kp_fitness / tsp_fitness
-        return tsp_solution, kp_solution, total_fitness
+    def ma2b_algorithm(self, num_iterations=1000):
+        best_fitness = float('-inf')
+        best_tsp_solution = None
+        best_kp_solution = None
+
+        for _ in range(num_iterations):
+            tsp_solution = self.tsp_solver()
+            kp_solution = self.kp_solver()
+
+            tsp_fitness = self.calculate_distance(tsp_solution)
+            kp_fitness = self.calculate_fitness(kp_solution)
+            total_fitness = kp_fitness / tsp_fitness
+
+            if total_fitness > best_fitness:
+                best_fitness = total_fitness
+                best_tsp_solution = tsp_solution
+                best_kp_solution = kp_solution
+
+        return best_tsp_solution, best_kp_solution, best_fitness
+
+distance_matrix = [
+    [0, 2, 5, 9, 10, 3, 7, 4],
+    [2, 0, 4, 8, 9, 7, 6, 5],
+    [5, 4, 0, 6, 7, 2, 3, 1],
+    [9, 8, 6, 0, 3, 4, 9, 2],
+    [10, 9, 7, 3, 0, 6, 5, 3],
+    [3, 7, 2, 4, 6, 0, 8, 6],
+    [7, 6, 3, 9, 5, 8, 0, 7],
+    [4, 5, 1, 2, 3, 6, 7, 0]
+]
+item_values = [4, 6, 8, 2, 5, 3, 7, 9]
+item_weights = [1, 2, 3, 2, 1, 4, 5, 3]
+knapsack_capacity = 6
+
+
+ma2b = MA2B(distance_matrix, item_values, item_weights, knapsack_capacity)
+tsp_solution, kp_solution, total_fitness = ma2b.ma2b_algorithm()
+

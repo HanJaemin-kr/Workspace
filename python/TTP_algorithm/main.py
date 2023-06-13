@@ -1,4 +1,6 @@
 #from matls_ttp import MATLS
+import random
+
 from python.TTP_algorithm.ma2b_ttp import MA2B
 from coGA_ttp import CoGA
 from python.tmp.s5_ttp import S5
@@ -40,8 +42,7 @@ def calculate_total_distance(tsp_solution, distance_matrix):
 # item_values = [4, 6, 8, 2, 5, 3, 7, 9, 1, 6, 3, 2, 5, 7, 2, 4, 6, 8, 1, 3]
 # item_weights = [1, 2, 3, 2, 1, 4, 5, 3, 2, 1, 3, 2, 4, 2, 1, 3, 2, 1, 2, 3]
 # knapsack_capacity = 9
-
-
+"""
 distance_matrix = [
     [0, 2, 5, 9, 10, 3, 7, 4],
     [2, 0, 4, 8, 9, 7, 6, 5],
@@ -55,83 +56,155 @@ distance_matrix = [
 item_values = [4, 6, 8, 2, 5, 3, 7, 9]
 item_weights = [1, 2, 3, 2, 1, 4, 5, 3]
 knapsack_capacity = 6
+"""
 
-# distance_matrix = [
-#  [0, 2, 5, 9],
-#  [2, 0, 4, 8],
-#  [5, 4, 0, 6],
-#  [9, 8, 6, 0],]
-# item_values = [4, 6, 8, 2]
-# item_weights = [1, 2, 3, 2]
-# knapsack_capacity = 4
+distance_matrix = [
+  [0, 2, 5, 9],
+  [2, 0, 4, 8],
+  [5, 4, 0, 6],
+  [9, 8, 6, 0],]
+item_values = [4, 6, 8, 2]
+item_weights = [1, 2, 3, 2]
+knapsack_capacity = 4
+
 
 # ================ ga-param ================
-population_size = 1000
+population_size = 100
 elite_size = 0.2
-num_generations = 50
+num_generations = 5
 num_agents = 1
 # ================================================================
 
-brute_tsp_ls, brute_kp_ls = [], []
+brute_tsp_ls, brute_kp_ls, brute_time_ls, brute_fitness_ls = [], [], [], []
+coga_tsp_ls, coga_kp_ls, coga_time_ls, coga_fitness_ls = [], [], [], []
+cs2sa_tsp_ls, cs2sa_kp_ls, cs2sa_time_ls, cs2sa_fitness_ls = [], [], [], []
+ma2b_tsp_ls, ma2b_kp_ls, ma2b_time_ls, ma2b_fitness_ls = [], [], [], []
 
 
-# brute-force Algorithm
-start_time = time.time()
-brute = BRUTE(distance_matrix, item_values, item_weights, knapsack_capacity)
-best_tsp_genome, best_kp_genome, best_fitness = brute.solve_ttp_brute_force()
-end_time = time.time()
+for i in range(1, 3):
+    # 난이도 수정
+    print(f"=== Round {i} ===")
 
-print("Brute Force Execution Time:", end_time - start_time, "seconds")
-print("총 이동 거리 :",calculate_total_distance(best_tsp_genome, distance_matrix))
+    for j in range(len(distance_matrix)):
+        new_element = random.randint(1, 5)
+        distance_matrix[j].append(new_element)
+    new_row = [random.randint(1, 5) for _ in range(len(distance_matrix[0]) + 1)]
+    distance_matrix.append(new_row)
+    new_value = random.randint(1, 5)
+    item_values.append(new_value)
+    new_weight = random.randint(1, 3)
+    item_weights.append(new_weight)
+    knapsack_capacity += random.randint(1, 3)
 
+    #brute-force Algorithm
+    start_time = time.time()
+    brute = BRUTE(distance_matrix, item_values, item_weights, knapsack_capacity)
+    best_tsp_genome, best_kp_genome, best_fitness = brute.solve_ttp_brute_force()
+    end_time = time.time()
 
-# co-ga Algorithm
-start_time = time.time()
-coga = CoGA(distance_matrix, item_values, item_weights, knapsack_capacity, population_size, elite_size, num_generations)
-best_individual, ttp_fitness = coga.solve_ttp_problem()
-end_time = time.time()
-
-print("Co-EA Execution Time:", end_time - start_time, "seconds")
-print("총 이동 거리 :",calculate_total_distance(best_individual['tsp_genome'], distance_matrix))
-
-# cs2sa
-start_time = time.time()
-cs2sa = CS2SA()
-best_tsp_solution, best_kp_solution, best_fitness = cs2sa.cs2sa_algorithm(distance_matrix, item_values, item_weights,
-                                                                   knapsack_capacity)
-end_time = time.time()
-print("CS2SA Execution Time:", end_time - start_time, "seconds")
-print("총 이동 거리 :",calculate_total_distance(best_tsp_solution, distance_matrix))
-
-
-# # ga Algorithm
-# start_time = time.time()
-# ga = GA(distance_matrix, item_values, item_weights, knapsack_capacity, population_size, elite_size, num_generations)
-# best_individual, ttp_fitness = ga.solve_ttp_problem()
-# end_time = time.time()
-#
-# print("GA Execution Time:", end_time - start_time, "seconds")
+    brute_tsp_ls.append(list(best_tsp_genome))
+    brute_kp_ls.append(list(best_kp_genome))
+    brute_time_ls.append(end_time - start_time)
+    # print("Brute Force Execution Time:", end_time - start_time, "seconds")
+    # print("총 이동 거리 :",calculate_total_distance(best_tsp_genome, distance_matrix))
 
 
-# MA2B Algorithm
-start_time = time.time()
-ma2b = MA2B(distance_matrix, item_values, item_weights, knapsack_capacity)
-tsp_solution, kp_solution, total_fitness = ma2b.ma2b_algorithm()
+    # co-ga Algorithm
+    start_time = time.time()
+    coga = CoGA(distance_matrix, item_values, item_weights, knapsack_capacity, population_size, elite_size, num_generations)
+    best_individual, ttp_fitness = coga.solve_ttp_problem()
+    end_time = time.time()
+    coga_tsp_ls.append(best_individual['tsp_genome'])
+    coga_kp_ls.append(best_individual['kp_genome'])
+    coga_time_ls.append(end_time - start_time)
 
-print("\n\n\n=======MA2B Algorithm=======")
-print("TSP Solution:", tsp_solution)
-print("Selected Knapsack Weights:", sum([item_weights[i] for i in range(len(kp_solution)) if kp_solution[i] == 1]))
-print("Total Item Value:", sum([item_values[i] for i in range(len(kp_solution)) if kp_solution[i] == 1]))
-total_distance = 0
-for i in range(len(tsp_solution)):
-    city1 = tsp_solution[i] - 1
-    city2 = tsp_solution[(i + 1) % len(tsp_solution)] - 1
-    total_distance += distance_matrix[city1][city2]
-print(" >2 Total Distance:", total_distance)
-print("Total Fitness:", total_fitness)
+    print("Co-EA Execution Time:", end_time - start_time, "seconds")
+    print("총 이동 거리 :",calculate_total_distance(best_individual['tsp_genome'], distance_matrix))
 
-end_time = time.time()
-print("MA2B Execution Time:", end_time - start_time, "seconds")
+    # cs2sa
+    start_time = time.time()
+    cs2sa = CS2SA()
+    best_tsp_solution, best_kp_solution, best_fitness = cs2sa.cs2sa_algorithm(distance_matrix, item_values, item_weights,
+                                                                       knapsack_capacity)
+    end_time = time.time()
+    cs2sa_tsp_ls.append(best_tsp_solution)
+    cs2sa_kp_ls.append(best_kp_solution)
+    cs2sa_time_ls.append(end_time - start_time)
+    print("CS2SA Execution Time:", end_time - start_time, "seconds")
+    print("총 이동 거리 :",calculate_total_distance(best_tsp_solution, distance_matrix))
+
+
+
+    # MA2B Algorithm
+    start_time = time.time()
+    ma2b = MA2B(distance_matrix, item_values, item_weights, knapsack_capacity)
+    tsp_solution, kp_solution, total_fitness = ma2b.ma2b_algorithm()
+    end_time = time.time()
+    ma2b_tsp_ls.append(tsp_solution)
+    ma2b_kp_ls.append(kp_solution)
+    ma2b_time_ls.append(end_time - start_time)
+    print("ma2b Execution Time:", end_time - start_time, "seconds")
+    print("총 이동 거리 :",calculate_total_distance(tsp_solution, distance_matrix))
+    ############################
+    print('하나 끝')
+"""
+    print("\n\n\n=======MA2B Algorithm=======")
+    print("TSP Solution:", tsp_solution)
+    print("Selected Knapsack Weights:", sum([item_weights[i] for i in range(len(kp_solution)) if kp_solution[i] == 1]))
+    print("Total Item Value:", sum([item_values[i] for i in range(len(kp_solution)) if kp_solution[i] == 1]))
+    total_distance = 0
+    for i in range(len(tsp_solution)):
+        city1 = tsp_solution[i] - 1
+        city2 = tsp_solution[(i + 1) % len(tsp_solution)] - 1
+        total_distance += distance_matrix[city1][city2]
+    print(" >2 Total Distance:", total_distance)
+    print("Total Fitness:", total_fitness)
+
+    end_time = time.time()
+    print("MA2B Execution Time:", end_time - start_time, "seconds")
+
+"""
+
+# Print the data
+print("Brute Force Algorithm:")
+print("TSP Result:", brute_tsp_ls)
+print("Knapsack Result:", brute_kp_ls)
+print("Execution Time:", brute_time_ls)
+print("Fitness:", brute_fitness_ls)
+print()
+
+print("COGA Algorithm:")
+print("TSP Result:", coga_tsp_ls)
+print("Knapsack Result:", coga_kp_ls)
+print("Execution Time:", coga_time_ls)
+print("Fitness:", coga_fitness_ls)
+print()
+
+print("CS2SA Algorithm:")
+print("TSP Result:", cs2sa_tsp_ls)
+print("Knapsack Result:", cs2sa_kp_ls)
+print("Execution Time:", cs2sa_time_ls)
+print("Fitness:", cs2sa_fitness_ls)
+print()
+
+print("MA2B Algorithm:")
+print("TSP Result:", ma2b_tsp_ls)
+print("Knapsack Result:", ma2b_kp_ls)
+print("Execution Time:", ma2b_time_ls)
+print("Fitness:", ma2b_fitness_ls)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # # s5 Algorithm
@@ -154,7 +227,13 @@ print("MA2B Execution Time:", end_time - start_time, "seconds")
 # end_time = time.time()
 # print("s5 Execution Time:", end_time - start_time, "seconds")
 #
+# # ga Algorithm
+# start_time = time.time()
+# ga = GA(distance_matrix, item_values, item_weights, knapsack_capacity, population_size, elite_size, num_generations)
+# best_individual, ttp_fitness = ga.solve_ttp_problem()
+# end_time = time.time()
 #
+# print("GA Execution Time:", end_time - start_time, "seconds")
 
 
 

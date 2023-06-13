@@ -34,16 +34,6 @@ class BRUTE:
                     best_tsp_solution = tsp_solution
                     best_kp_solution = kp_solution
                     best_fitness = ttp_fitness
-        print("\n==========================brute-force genetic Algorithm==========================")
-        print("Best Individual (TSP Genome):", [x + 1 for x in best_tsp_solution])
-        print("Best Individual (KP Genome):", best_kp_solution)
-        weight = sum([self.item_weights[i] for i in range(len(best_kp_solution)) if best_kp_solution[i] == 1])
-        print(" > Selected Knapsack Weights:", weight)
-        selected_values = sum([self.item_values[i] for i in range(len(best_kp_solution)) if best_kp_solution[i] == 1])
-        print(" > Total Item Value:", selected_values)
-
-        print(" > Total Distance:", self.calculate_total_distance(best_tsp_solution))
-        print("===> Fitness:", selected_values / weight)
 
         return best_tsp_solution, best_kp_solution, best_fitness
 
