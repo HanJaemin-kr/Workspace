@@ -97,22 +97,3 @@ class MA2B:
                 best_kp_solution = kp_solution
 
         return best_tsp_solution, best_kp_solution, best_fitness
-
-distance_matrix = [
-    [0, 2, 5, 9, 10, 3, 7, 4],
-    [2, 0, 4, 8, 9, 7, 6, 5],
-    [5, 4, 0, 6, 7, 2, 3, 1],
-    [9, 8, 6, 0, 3, 4, 9, 2],
-    [10, 9, 7, 3, 0, 6, 5, 3],
-    [3, 7, 2, 4, 6, 0, 8, 6],
-    [7, 6, 3, 9, 5, 8, 0, 7],
-    [4, 5, 1, 2, 3, 6, 7, 0]
-]
-item_values = [4, 6, 8, 2, 5, 3, 7, 9]
-item_weights = [1, 2, 3, 2, 1, 4, 5, 3]
-knapsack_capacity = 6
-
-
-ma2b = MA2B(distance_matrix, item_values, item_weights, knapsack_capacity)
-tsp_solution, kp_solution, total_fitness = ma2b.ma2b_algorithm()
-

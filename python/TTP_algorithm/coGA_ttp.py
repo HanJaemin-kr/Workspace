@@ -118,14 +118,10 @@ class CoGA:
         fitness_scores = self.evaluate_population(population)
         elite_size = int(self.elite_size * self.population_size)
         new_population = population[:elite_size]
-        # temp_population = np.array(population)[np.argsort(-np.array(fitness_scores))]
-        # temp_population = list(temp_population)
-        # new_population = temp_population[:elite_size]
 
         while len(new_population) < self.population_size:
             parent1, parent2 = self.select_parents(population, fitness_scores)
             child = self.crossover(parent1, parent2)
-            #child = self.mutate(child, mutation_rate)
             if(len(child['tsp_genome']) == len(population[0]['tsp_genome'])):
                 new_population.append(child)
 
@@ -147,12 +143,7 @@ class CoGA:
         ttp_fitness = fitness_scores[best_index]
 
         if(True):
-            print("\n==========================Co-evolution genetic Algorithm==========================")
-            print("Best Individual (TSP Genome):", best_individual['tsp_genome'])
-            print("Best Individual (KP Genome):", best_individual['kp_genome'])
-            print(" > Selected Knapsack Weights:", sum([self.item_weights[i] for i in range(len(best_individual['kp_genome'])) if best_individual['kp_genome'][i] == 1]))
-
-            print(" > Total Item Value:", sum([self.item_values[i] for i in range(len(best_individual['kp_genome'])) if best_individual['kp_genome'][i] == 1]))
+            total_value = ( sum([self.item_values[i] for i in range(len(best_individual['kp_genome'])) if best_individual['kp_genome'][i] == 1]))
             total_distance = 0
             tsp_genome = best_individual['tsp_genome']
             for i in range(num_cities):
@@ -160,46 +151,5 @@ class CoGA:
                 city2 = tsp_genome[(i + 1) % len(tsp_genome)] - 1
                 total_distance += self.distance_matrix[city1][city2]
 
-            print(" > Total Distance:", total_distance)
+        return best_individual, ttp_fitness, total_value, total_distance
 
-            print("===> Fitness:", ttp_fitness)
-
-        return best_individual, ttp_fitness
-
-
-
-# 예시 문제 데이터
-"""
-distance_matrix = [[0, 2, 5, 9, 10],
- [2, 0, 4, 8, 9],
- [5, 4, 0, 6, 7],
- [9, 8, 6, 0, 3],
- [10, 9, 7, 3, 0]]
-item_values = [4, 6, 8, 2, 5]
-item_weights = [1, 2, 3, 2, 1]
-knapsack_capacity = 6
-
-population_size = 100
-elite_size = 0.2
-num_generations = 100
-
-coga = CoGA(distance_matrix, item_values, item_weights, knapsack_capacity, population_size, elite_size, num_generations)
-best_individual, ttp_fitness = coga.solve_ttp_problem()
-
-# 출력
-print("\n=======Co-evolution genetic Algorithm=======")
-print("Best Individual (TSP Genome):", best_individual['tsp_genome'])
-print("Best Individual (KP Genome):", best_individual['kp_genome'])
-
-
-print("\nSelected Knapsack Weights:", sum([item_weights[i] for i in range(len(best_individual['kp_genome'])) if best_individual['kp_genome'][i] == 1]))
-print("Total Item Value:", sum([item_values[i] for i in range(len(best_individual['kp_genome'])) if best_individual['kp_genome'][i] == 1]))
-total_distance = 0
-for i in range(len(best_individual['tsp_genome'])):
-    city1 = best_individual['tsp_genome'][i] - 1
-    city2 = best_individual['tsp_genome'][(i + 1) % len(best_individual['tsp_genome'])] - 1
-    total_distance += distance_matrix[city1][city2]
-#print("Total Distance:", total_distance)
-
-print(" ===> Fitness:", ttp_fitness)
-"""
