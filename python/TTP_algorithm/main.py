@@ -6,6 +6,35 @@ from bruteforce_ttp import BRUTE
 import random
 import json
 import time
+import numpy as np
+
+def create_tsp_graph_matrix(size):
+    graph = np.random.randint(1, 10, size=(size, size))  # 임의의 그래프 매트릭스 생성
+    np.fill_diagonal(graph, 0)  # 대각선 요소는 0으로 설정
+
+    # 모든 노드 간의 거리를 동일하게 만듦
+    for i in range(size):
+        for j in range(size):
+            if i != j:
+                graph[i][j] = graph[j][i]
+
+    return graph
+
+
+def print_result(result):
+    for i, round_data in enumerate(result):
+        round_num = i + 1
+        print(f"\n=== Round {round_num} ===")
+        for algorithm_data in round_data[round_num]:
+            algorithm_name = list(algorithm_data.keys())[0]
+            algorithm_result = algorithm_data[algorithm_name]
+            print(f"{algorithm_name}:")
+            print(f"Value: {algorithm_result['value']}")
+            print(f"Weight: {algorithm_result['weight']}")
+            print(f"Distance: {algorithm_result['distance']}")
+            print(f"Fitness: {algorithm_result['fitness']}")
+            print(f"Time: {algorithm_result['time']}")
+            print()
 
 def calculate_total_distance(tsp_solution, distance_matrix):
     total_distance = 0
@@ -45,13 +74,7 @@ result = []
 for i in range(1, 7):
 
     result.append({i: []})
-    print(f"\n=== Round {i} ===")
-
-    for j in range(len(distance_matrix)):
-        new_element = random.randint(1, 5)
-        distance_matrix[j].append(new_element)
-    new_row = [random.randint(1, 5) for _ in range(len(distance_matrix[0]) + 1)]
-    distance_matrix.append(new_row)
+    distance_matrix = list(create_tsp_graph_matrix(i+2))
     new_value = random.randint(1, 5)
     item_values.append(new_value)
     new_weight = random.randint(1, 3)
@@ -61,6 +84,7 @@ for i in range(1, 7):
     print('capacity : ',knapsack_capacity)
     print(' value ==>',item_values)
     print(' weight ==>',item_weights)
+    print('\n')
 
 
     #brute-force Algorithm
@@ -70,8 +94,10 @@ for i in range(1, 7):
     end_time = time.time()
     best_kp_genome = list(best_kp_genome)
     total_value = sum([item_values[i] for i in range(len(best_kp_genome)) if best_kp_genome[i] == 1])
+    total_weight = sum([item_weights[i] for i in range(len(best_kp_genome)) if best_kp_genome[i] == 1])
     result[i - 1][i].append( { 'brute' : {
             "value": total_value,
+            "weight": total_weight,
             "distance": calculate_total_distance(list(best_tsp_genome), distance_matrix),
             "fitness" : best_fitness,
             "time": end_time - start_time
@@ -81,10 +107,12 @@ for i in range(1, 7):
     # co-ga Algorithm
     start_time = time.time()
     coga = CoGA(distance_matrix, item_values, item_weights, knapsack_capacity, population_size, elite_size, num_generations)
-    best_individual, ttp_fitness, value, distance = coga.solve_ttp_problem()
+
+    best_individual, ttp_fitness, value, distance, weight = coga.solve_ttp_problem()
     end_time = time.time()
     result[i - 1][i].append( { 'coga' : {
             "value": value,
+            "weight": weight,
             "distance": distance,
             "fitness" : ttp_fitness,
             "time": end_time - start_time
@@ -95,11 +123,12 @@ for i in range(1, 7):
     # cs2sa
     start_time = time.time()
     cs2sa = CS2SA()
-    best_tsp_solution, best_kp_solution, best_fitness, total_distance, selected_values = cs2sa.cs2sa_algorithm(distance_matrix, item_values, item_weights, knapsack_capacity)
+    best_tsp_solution, best_kp_solution, best_fitness, total_distance, selected_values, selected_weights = cs2sa.cs2sa_algorithm(distance_matrix, item_values, item_weights, knapsack_capacity)
     end_time = time.time()
 
     result[i - 1][i].append( { 'cs2sa' : {
-            "value": value,
+            "value": selected_values,
+            "weight": selected_weights,
             "distance": calculate_total_distance(best_tsp_solution, distance_matrix),
             "fitness" : best_fitness,
             "time": end_time - start_time
@@ -114,9 +143,11 @@ for i in range(1, 7):
     end_time = time.time()
 
     total_value = sum([item_values[i] for i in range(len(kp_solution)) if kp_solution[i] == 1])
+    total_weight = sum([item_weights[i] for i in range(len(kp_solution)) if kp_solution[i] == 1])
 
     result[i - 1][i].append({'ma2b': {
-        "value": value,
+        "value": total_value,
+        "weight": total_weight,
         "distance": calculate_total_distance(tsp_solution, distance_matrix),
         "fitness": total_fitness,
         "time": end_time - start_time
@@ -124,8 +155,9 @@ for i in range(1, 7):
     })
 
 
+print(print_result(result))
 # 결과를 저장할 파일 경로 및 파일명
-file_path = "result.txt"
+file_path = "result_2.txt"
 
 # result 변수를 JSON 형식으로 변환
 result_json = json.dumps(result)

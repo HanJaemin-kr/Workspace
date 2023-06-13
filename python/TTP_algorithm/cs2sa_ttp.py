@@ -115,7 +115,7 @@ class CS2SA:
 
         best_tsp_solution = [x + 1 for x in best_tsp_solution]
 
-        #selected_weights = sum([item_weights[i] for i in range(len(best_kp_solution)) if best_kp_solution[i] == 1])
+        selected_weights = sum([item_weights[i] for i in range(len(best_kp_solution)) if best_kp_solution[i] == 1])
         selected_values = sum([item_values[i] for i in range(len(best_kp_solution)) if best_kp_solution[i] == 1])
 
 
@@ -125,5 +125,5 @@ class CS2SA:
             city2 = best_tsp_solution[(i + 1) % len(best_tsp_solution)] - 1
             total_distance += distance_matrix[city1][city2]
 
-        return best_tsp_solution, best_kp_solution, best_fitness, total_distance, selected_values
+        return best_tsp_solution, best_kp_solution, best_fitness, total_distance, selected_values, selected_weights
 

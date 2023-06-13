@@ -1,29 +1,31 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import random
+import numpy as np
 
-distance_matrix = [[0, 2, 5, 9],
-                   [2, 0, 4, 8],
-                   [5, 4, 0, 6],
-                   [9, 8, 6, 0]]
-item_values = [4, 6, 8, 2]
-item_weights = [1, 2, 3, 2]
-knapsack_capacity = 4
+def create_tsp_graph_matrix(size):
+    graph = np.random.randint(1, 10, size=(size, size))  # 임의의 그래프 매트릭스 생성
+    np.fill_diagonal(graph, 0)  # 대각선 요소는 0으로 설정
 
-for i in range(1, 6):
-    print(f"=== Round {i} ===")
+    # 모든 노드 간의 거리를 동일하게 만듦
+    for i in range(size):
+        for j in range(size):
+            if i != j:
+                graph[i][j] = graph[j][i]
 
-    for j in range(len(distance_matrix)):
-        new_element = random.randint(1, 5)
-        distance_matrix[j].append(new_element)
-    new_row = [random.randint(1, 5) for _ in range(len(distance_matrix[0]) + 1)]
-    distance_matrix.append(new_row)
-    new_value = random.randint(1, 5)
-    item_values.append(new_value)
-    new_weight = random.randint(1, 3)
-    item_weights.append(new_weight)
-    knapsack_capacity += random.randint(1, 3)
+    return graph
+
+# 매트릭스 크기 입력 받기
+size = int(input("매트릭스 크기를 입력하세요: "))
+
+# TSP 그래프 매트릭스 생성
+tsp_graph = create_tsp_graph_matrix(size)
+
+print("TSP 그래프 매트릭스:")
+print(tsp_graph)
+
+
+
 
 """
 # Data for brute force algorithm

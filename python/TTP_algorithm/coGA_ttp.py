@@ -144,6 +144,7 @@ class CoGA:
 
         if(True):
             total_value = ( sum([self.item_values[i] for i in range(len(best_individual['kp_genome'])) if best_individual['kp_genome'][i] == 1]))
+            total_weight = ( sum([self.item_weights[i] for i in range(len(best_individual['kp_genome'])) if best_individual['kp_genome'][i] == 1]))
             total_distance = 0
             tsp_genome = best_individual['tsp_genome']
             for i in range(num_cities):
@@ -151,5 +152,5 @@ class CoGA:
                 city2 = tsp_genome[(i + 1) % len(tsp_genome)] - 1
                 total_distance += self.distance_matrix[city1][city2]
 
-        return best_individual, ttp_fitness, total_value, total_distance
+        return best_individual, ttp_fitness, total_value, total_distance, total_weight
 
